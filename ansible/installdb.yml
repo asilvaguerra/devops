@@ -1,0 +1,58 @@
+---
+- hosts: db
+  become: yes
+  tasks:
+    - name: 'Instalação de pacotes BD'
+      apt:
+        pkg:
+          - mariadb-server
+          - wget
+          - zip
+          - curl
+          - vim
+          - python3-mysqldb
+        state: present
+    - name: 'Download  e extração DB'
+      #unarchive:
+      #src: https://github.com/rogerramossilva/devops/raw/master/db.zip
+      #dest: /tmp
+      #remote_src: yes
+      ansible.builtin.get_url:
+          url: "https://raw.githubusercontent.com/rogerramossilva/devops-112025/refs/heads/main/db/backup.sql"
+          dest: "/tmp/backup.sql"
+          mode: 0644
+    - name: 'Criando DB backup'
+      mysql_db:
+        name: backup
+        login_user: root
+        login_password: ""
+        state: present     
+    - name: 'Importação DB backup/sql'
+      mysql_db:
+        login_user: root
+        login_password: ""
+        state: import
+        name: backup
+        target: /tmp/backup.sql
+    - name: 'Criação de usuário express no mysql'
+      mysql_user:
+        host: '%'
+        login_user: root
+        login_password: ""
+        name: express
+        password: 'AllSafe0!'
+        priv: 'backup.*:ALL'
+        state: present
+      notify: Restart Mysql
+    - name: 'Substituir bind do mysql'
+      replace:
+        path: /etc/mysql/mariadb.conf.d/50-server.cnf
+        regexp: '127\.0\.0\.1'
+        replace: '0.0.0.0'
+      notify: Restart Mysql
+  handlers:
+    - name: Restart Mysql
+      service:
+        name: mysql
+        state: restarted
+        enabled: yes

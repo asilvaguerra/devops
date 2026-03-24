@@ -1,0 +1,5 @@
+[web]
+172.17.177.101 ansible_user=vagrant ansible_ssh_private_file_key="/home/vagrant/.ss/id_rsa"
+
+[db]
+172.17.177.102 ansible_user=vagrant ansible_ssh_private_file_key="/home/vagrant/.ss/id_rsa"

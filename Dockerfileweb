@@ -1,0 +1,14 @@
+FROM debian:latest
+RUN apt update -y && \
+	apt upgrade -y && \
+	apt install curl apache2 -y && \
+	curl -sSL https://packages.sury.org/php/README.txt | bash -x && \
+	apt update -y && \
+	apt install libapache2-mod-php7.4 php7.4 php7.4-cli php7.4-common php7.4-mysqlnd -y && \
+	a2enmod php7.4 && \
+	mv /var/www/html/index.html /var/www/html/index.html.old
+COPY ./web /var/www/html
+EXPOSE 80
+WORKDIR /etc/apache2
+CMD ["apachectl", "-D", "FOREGROUND" ]
+
